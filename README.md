@@ -19,13 +19,35 @@ Review Ready scans your git changes and flags issues before you open a pull requ
 
 ## How to use
 
-1. Make your changes and stage them with git
-2. Click the **✓** icon in the Source Control toolbar
-3. Or run `Review Ready: Check Changes` from the Command Palette (`Ctrl+Shift+P`)
+### GitHub Action (CI/CD)
 
-Results appear in the **Review Ready** panel in the Activity Bar.
+Add to `.github/workflows/review-ready.yml`:
 
-The extension also runs automatically whenever you stage or unstage files.
+```yaml
+name: Review Ready
+on:
+  pull_request:
+    branches: [main, master]
+jobs:
+  review-ready:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: yurukusa/review-ready@v0.1.0
+```
+
+Results appear as inline PR annotations — errors block merge (by default), warnings are informational.
+
+### VS Code Extension
+
+1. Install from the VS Code Marketplace or Open VSX Registry
+2. Make your changes and stage them with git
+3. Click the **✓** icon in the Source Control toolbar
+4. Or run `Review Ready: Check Changes` from the Command Palette (`Ctrl+Shift+P`)
+
+Results appear in the **Review Ready** panel in the Activity Bar. The extension also runs automatically whenever you stage or unstage files.
 
 ## Configuration
 

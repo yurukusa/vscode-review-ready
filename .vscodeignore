@@ -6,3 +6,5 @@ tsconfig.json
 **/*.map
 node_modules/**
 out/checks.test.js
+out/cli.js
+action.yml

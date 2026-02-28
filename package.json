@@ -4,10 +4,24 @@
   "description": "Pre-PR checklist that catches the small things before your reviewer does: debug statements, missing tests, secrets, TODO debt, and complexity spikes.",
   "version": "0.1.0",
   "publisher": "yurukusa",
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Other", "Linters"],
-  "keywords": ["code review", "pull request", "pr", "checklist", "git", "quality"],
-  "activationEvents": ["onStartupFinished"],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Linters"
+  ],
+  "keywords": [
+    "code review",
+    "pull request",
+    "pr",
+    "checklist",
+    "git",
+    "quality"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "icon": "images/icon.png",
   "repository": {
@@ -101,6 +115,8 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
+    "@vercel/ncc": "^0.38.4",
+    "@vscode/vsce": "^3.7.1",
     "typescript": "^5.3.0"
   }
 }

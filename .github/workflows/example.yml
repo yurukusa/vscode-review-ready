@@ -1,0 +1,30 @@
+# Example workflow showing how to use the Review Ready GitHub Action
+# Copy this to your own repository's .github/workflows/ directory
+
+name: Review Ready
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  review-ready:
+    name: Pre-PR Checklist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch enough history for the diff
+          fetch-depth: 0
+
+      - name: Run Review Ready
+        uses: yurukusa/review-ready@v0.1.0
+        with:
+          no-debug-statements: true    # Flag console.log, debugger, print()
+          no-todo-in-changes: true     # Flag TODO/FIXME in new code
+          no-secrets: true             # Detect hardcoded credentials
+          no-large-files: true         # Flag accidentally staged large files
+          test-coverage: true          # Warn when test file is missing
+          complexity: true             # Flag high cyclomatic complexity
+          complexity-threshold: 10     # Branches per function before flagging
+          fail-on: error               # "error" | "warning" | "never"

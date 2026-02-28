@@ -1,0 +1,45 @@
+name: 'Review Ready'
+description: 'Pre-PR checklist that catches debug statements, secrets, TODO debt, and complexity spikes in your changed files.'
+author: 'yurukusa'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  no-debug-statements:
+    description: 'Flag console.log, debugger, print() etc. in changed lines'
+    required: false
+    default: 'true'
+  no-todo-in-changes:
+    description: 'Flag TODO/FIXME/HACK in changed lines'
+    required: false
+    default: 'true'
+  no-secrets:
+    description: 'Detect potential secrets/API keys in changed lines'
+    required: false
+    default: 'true'
+  no-large-files:
+    description: 'Flag files over 500KB accidentally staged'
+    required: false
+    default: 'true'
+  test-coverage:
+    description: 'Warn when source files changed but no test file exists'
+    required: false
+    default: 'true'
+  complexity:
+    description: 'Flag functions with high cyclomatic complexity in changed files'
+    required: false
+    default: 'true'
+  complexity-threshold:
+    description: 'Cyclomatic complexity threshold (default: 10)'
+    required: false
+    default: '10'
+  fail-on:
+    description: 'When to fail the check: "error" (default), "warning", or "never"'
+    required: false
+    default: 'error'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
