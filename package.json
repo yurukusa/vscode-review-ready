@@ -1,0 +1,106 @@
+{
+  "name": "review-ready",
+  "displayName": "Review Ready",
+  "description": "Pre-PR checklist that catches the small things before your reviewer does: debug statements, missing tests, secrets, TODO debt, and complexity spikes.",
+  "version": "0.1.0",
+  "publisher": "yurukusa",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other", "Linters"],
+  "keywords": ["code review", "pull request", "pr", "checklist", "git", "quality"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yurukusa/vscode-review-ready"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "reviewReady.check",
+        "title": "Review Ready: Check Changes",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "reviewReady.checkFile",
+        "title": "Review Ready: Check This File"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "reviewReady",
+          "title": "Review Ready",
+          "icon": "$(checklist)"
+        }
+      ]
+    },
+    "views": {
+      "reviewReady": [
+        {
+          "id": "reviewReady.results",
+          "name": "Check Results"
+        }
+      ]
+    },
+    "menus": {
+      "scm/title": [
+        {
+          "command": "reviewReady.check",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Review Ready",
+      "properties": {
+        "reviewReady.checks.noDebugStatements": {
+          "type": "boolean",
+          "default": true,
+          "description": "Flag console.log, debugger, print() etc. in changed lines"
+        },
+        "reviewReady.checks.noTodoInChanges": {
+          "type": "boolean",
+          "default": true,
+          "description": "Flag TODO/FIXME/HACK in changed lines"
+        },
+        "reviewReady.checks.noSecrets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect potential secrets/API keys in changed lines"
+        },
+        "reviewReady.checks.testCoverage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when source files changed but no test file exists"
+        },
+        "reviewReady.checks.complexity": {
+          "type": "boolean",
+          "default": true,
+          "description": "Flag functions with high cyclomatic complexity in changed files"
+        },
+        "reviewReady.checks.noLargeFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Flag files over 500KB accidentally staged"
+        },
+        "reviewReady.complexity.threshold": {
+          "type": "number",
+          "default": 10,
+          "description": "Cyclomatic complexity threshold (default: 10)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npx @vscode/vsce package",
+    "publish": "npx @vscode/vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}
