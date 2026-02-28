@@ -82,6 +82,13 @@ Because the most embarrassing PR review comments are the avoidable ones:
 
 Review Ready catches those before they reach your reviewer.
 
+---
+
+Also available as:
+- **GitHub Action**: `uses: yurukusa/review-ready@v0.1.0`
+- **npm library**: `npm install review-ready`
+- **MCP Server** (Claude Code / Claude Desktop): `npx review-ready-mcp`
+
 ## License
 
 MIT
