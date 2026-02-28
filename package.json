@@ -17,7 +17,27 @@
     "pr",
     "checklist",
     "git",
-    "quality"
+    "quality",
+    "linter",
+    "ci"
+  ],
+  "exports": {
+    ".": "./out/checks.js",
+    "./checks": "./out/checks.js",
+    "./gitDiff": "./out/gitDiff.js",
+    "./cli": "./dist/index.js"
+  },
+  "types": "./src/checks.ts",
+  "files": [
+    "out/checks.js",
+    "out/checks.js.map",
+    "out/gitDiff.js",
+    "out/gitDiff.js.map",
+    "src/checks.ts",
+    "src/gitDiff.ts",
+    "dist/index.js",
+    "README.md",
+    "LICENSE"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -109,8 +129,9 @@
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "bundle": "npx ncc build out/cli.js -o dist --no-source-map-register",
     "package": "npx @vscode/vsce package",
-    "publish": "npx @vscode/vsce publish"
+    "vsce:publish": "npx @vscode/vsce publish"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
