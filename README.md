@@ -4,6 +4,8 @@
 
 Review Ready scans your git changes and flags issues before you open a pull request — no CI needed, no setup required.
 
+**[→ Try the live demo](https://yurukusa.github.io/vscode-review-ready/)** — paste code, see results instantly.
+
 ![Status bar showing Review Ready: 2 errors](https://github.com/yurukusa/vscode-review-ready/raw/main/images/icon.png)
 
 ## What it checks
