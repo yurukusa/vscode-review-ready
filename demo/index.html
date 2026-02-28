@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Ready — Live Demo</title>
+  <meta name="description" content="Paste your code and see what Review Ready catches before your PR reviewer does. Detects debug statements, secrets, TODOs, and complexity.">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --error: #f85149;
+      --warning: #d29922;
+      --info: #58a6ff;
+      --success: #56d364;
+      --accent: #58d8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+    header { text-align: center; margin-bottom: 40px; }
+    header h1 { font-size: 2rem; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+    header p { color: var(--muted); font-size: 1rem; max-width: 500px; margin: 0 auto 12px; }
+    .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    .badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; border: 1px solid; }
+    .badge.green { border-color: var(--success); color: var(--success); background: rgba(86,211,100,0.08); }
+    .badge.blue { border-color: var(--info); color: var(--info); background: rgba(88,166,255,0.08); }
+    .badge.cyan { border-color: var(--accent); color: var(--accent); background: rgba(88,216,240,0.08); }
+
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .panel-title { font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+
+    .controls { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .filename-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; flex: 1; min-width: 160px; }
+    .filename-input:focus { outline: none; border-color: var(--accent); }
+
+    textarea {
+      width: 100%; height: 320px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85rem; padding: 14px; resize: vertical; line-height: 1.6;
+    }
+    textarea:focus { outline: none; border-color: var(--accent); }
+
+    .btn { background: var(--accent); color: #0d1117; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+    .btn:hover { opacity: 0.9; }
+
+    .result-list { min-height: 320px; }
+    .result-empty { color: var(--muted); font-size: 0.9rem; text-align: center; padding-top: 100px; }
+    .result-pass { color: var(--success); text-align: center; padding-top: 80px; font-size: 1.1rem; font-weight: 700; }
+    .result-pass small { display: block; color: var(--muted); font-size: 0.8rem; font-weight: 400; margin-top: 6px; }
+
+    .result-item { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.875rem; border-left: 3px solid; }
+    .result-item.error { background: rgba(248,81,73,0.08); border-color: var(--error); }
+    .result-item.warning { background: rgba(210,153,34,0.08); border-color: var(--warning); }
+    .result-item.info { background: rgba(88,166,255,0.08); border-color: var(--info); }
+    .result-rule { font-weight: 600; font-size: 0.8rem; margin-bottom: 3px; }
+    .result-item.error .result-rule { color: var(--error); }
+    .result-item.warning .result-rule { color: var(--warning); }
+    .result-item.info .result-rule { color: var(--info); }
+    .result-msg { color: var(--text); }
+    .result-loc { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+
+    .summary { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; padding: 10px 14px; background: var(--bg); border-radius: 6px; }
+
+    .example-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .example-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .links { text-align: center; margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
+    .links a { color: var(--accent); text-decoration: none; margin: 0 12px; }
+    .links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>✓ Review Ready</h1>
+    <p>Paste code below to catch debug statements, secrets, TODO debt, and complexity before your reviewer does.</p>
+    <div class="badges">
+      <span class="badge green">VS Code Extension</span>
+      <span class="badge blue">GitHub Action</span>
+      <span class="badge cyan">MCP Server (Claude)</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-title">Code to check</div>
+      <div class="controls">
+        <input class="filename-input" id="filename" type="text" value="src/auth.ts" placeholder="filename.ts">
+        <button class="example-btn" onclick="loadExample()">Load example</button>
+        <button class="btn" onclick="runChecks()">Run checks</button>
+      </div>
+      <textarea id="code" placeholder="Paste your code here..." spellcheck="false">// Paste code here or click "Load example"
+</textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Results</div>
+      <div id="results" class="result-list">
+        <div class="result-empty">Paste code on the left and click "Run checks"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="links">
+    <a href="https://github.com/yurukusa/vscode-review-ready">GitHub</a>
+    <a href="https://www.npmjs.com/package/review-ready">npm library</a>
+    <a href="https://www.npmjs.com/package/review-ready-mcp">MCP server</a>
+    <a href="https://github.com/yurukusa/review-ready-mcp">review-ready-mcp</a>
+  </div>
+</div>
+
+<script>
+// ── Check implementations (pure JS, mirrors checks.ts) ─────────────────────
+
+const DEBUG_PATTERNS = [
+  /\bconsole\.(log|debug|warn|error|trace|dir|table)\s*\(/,
+  /\bdebugger\b/,
+  /\bprint\s*\(/,
+  /\bputs\s/,
+  /\bfmt\.Print/,
+  /\bprintln!\s*\(/,
+  /\bvar_dump\s*\(/,
+  /\bdd\s*\(/,
+];
+
+const TODO_PATTERN = /\b(TODO|FIXME|HACK|XXX|TEMP|WTF|BUG)[\s:]/i;
+
+const SECRET_PATTERNS = [
+  { pattern: /['"][A-Za-z0-9+/]{40,}['"]/, label: 'long base64-like string' },
+  { pattern: /(?:api[_-]?key|apikey)\s*[:=]\s*['"][^'"]{8,}['"]/i, label: 'API key' },
+  { pattern: /(?:secret|password|passwd|pwd)\s*[:=]\s*['"][^'"]{4,}['"]/i, label: 'credential' },
+  { pattern: /(?:AKIA|ASIA)[A-Z0-9]{16}/, label: 'AWS access key' },
+  { pattern: /ghp_[A-Za-z0-9]{36}/, label: 'GitHub PAT' },
+  { pattern: /sk-[A-Za-z0-9]{48}/, label: 'OpenAI API key' },
+  { pattern: /xox[baprs]-[A-Za-z0-9-]{10,}/, label: 'Slack token' },
+];
+
+const BRANCH_KEYWORDS = /\b(if|else if|while|for|case|catch|\?\s*[^:]+:|&&|\|\|)\b/g;
+
+function checkDebugStatements(lines, filename) {
+  const results = [];
+  lines.forEach((line, idx) => {
+    const t = line.trim();
+    if (t.startsWith('//') || t.startsWith('#') || t.startsWith('*')) return;
+    for (const p of DEBUG_PATTERNS) {
+      if (p.test(line)) {
+        results.push({ rule: 'no-debug-statements', severity: 'error',
+          message: `Debug statement found: ${line.trim()}`, line: idx + 1, file: filename });
+        break;
+      }
+    }
+  });
+  return results;
+}
+
+function checkTodos(lines, filename) {
+  return lines.flatMap((line, idx) =>
+    TODO_PATTERN.test(line)
+      ? [{ rule: 'no-todo-in-changes', severity: 'warning',
+          message: `Unresolved marker: ${line.trim()}`, line: idx + 1, file: filename }]
+      : []
+  );
+}
+
+function checkSecrets(lines, filename) {
+  const f = filename.toLowerCase();
+  if (['test','spec','mock','fixture','example'].some(k => f.includes(k)) || f.endsWith('.md')) return [];
+  const results = [];
+  lines.forEach((line, idx) => {
+    const t = line.trim();
+    if (t.startsWith('//') || t.startsWith('#')) return;
+    for (const { pattern, label } of SECRET_PATTERNS) {
+      if (pattern.test(line)) {
+        results.push({ rule: 'no-secrets', severity: 'error',
+          message: `Possible ${label} detected`, line: idx + 1, file: filename });
+        break;
+      }
+    }
+  });
+  return results;
+}
+
+function checkComplexity(lines, filename, threshold = 10) {
+  const ext = filename.split('.').pop();
+  if (!['ts','tsx','js','jsx'].includes(ext)) return [];
+  if (lines.length < 20) return [];
+  const matches = lines.join('\n').match(BRANCH_KEYWORDS);
+  const cc = (matches?.length ?? 0) + 1;
+  if (cc > threshold) {
+    return [{ rule: 'complexity-threshold', severity: 'warning',
+      message: `High apparent complexity (~${cc} branches) — consider breaking it up`, file: filename }];
+  }
+  return [];
+}
+
+// ── Run ─────────────────────────────────────────────────────────────────────
+
+function runChecks() {
+  const code = document.getElementById('code').value;
+  const filename = document.getElementById('filename').value || 'code.ts';
+  const lines = code.split('\n');
+
+  const results = [
+    ...checkDebugStatements(lines, filename),
+    ...checkTodos(lines, filename),
+    ...checkSecrets(lines, filename),
+    ...checkComplexity(lines, filename),
+  ].sort((a, b) => {
+    const order = { error: 0, warning: 1, info: 2 };
+    return (order[a.severity] ?? 3) - (order[b.severity] ?? 3);
+  });
+
+  renderResults(results, lines.length, filename);
+}
+
+function renderResults(results, lineCount, filename) {
+  const el = document.getElementById('results');
+  if (results.length === 0) {
+    el.innerHTML = `<div class="result-pass">✓ All checks passed<small>Checked ${lineCount} lines in ${filename}</small></div>`;
+    return;
+  }
+
+  const errors = results.filter(r => r.severity === 'error').length;
+  const warnings = results.filter(r => r.severity === 'warning').length;
+  const infos = results.filter(r => r.severity === 'info').length;
+
+  const summary = `<div class="summary">Found <strong>${errors} error(s)</strong>, ${warnings} warning(s), ${infos} info — ${lineCount} lines checked</div>`;
+
+  const items = results.map(r => {
+    const icon = r.severity === 'error' ? '✗' : r.severity === 'warning' ? '⚠' : 'ℹ';
+    const loc = r.line ? ` · line ${r.line}` : '';
+    return `<div class="result-item ${r.severity}">
+      <div class="result-rule">${icon} ${r.rule}</div>
+      <div class="result-msg">${escapeHtml(r.message)}</div>
+      <div class="result-loc">${escapeHtml(r.file)}${loc}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = summary + items;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function loadExample() {
+  document.getElementById('filename').value = 'src/auth.ts';
+  document.getElementById('code').value = `import { db } from './database';
+
+const API_KEY = 'sk-aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789ABCDEF';
+
+export async function loginUser(email: string, password: string) {
+  console.log('Attempting login for:', email);
+
+  // TODO: add rate limiting
+  const user = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+
+  if (!user) {
+    console.debug('User not found:', email);
+    return null;
+  }
+
+  // FIXME: compare hash instead of plaintext
+  if (user.password !== password) {
+    return null;
+  }
+
+  console.log('Login successful for user:', user.id);
+  debugger;
+  return user;
+}`;
+  runChecks();
+}
+
+// Auto-run on Ctrl+Enter
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runChecks();
+});
+</script>
+</body>
+</html>
